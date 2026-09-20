@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "roubilibo.battery-plus",
+  "name": "Battery Plus",
+  "version": "1.0.0",
+  "author": "Roubilibo",
+  "license": "MIT",
+  "description": "Apple-style battery status, power profile, and Lenovo conservation controls",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "Battery Plus",
+    "description": "Apple-style battery status, power profile, and Lenovo conservation controls",
+    "category": "System",
+    "allowMultiple": false
+  }
+}

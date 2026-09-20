@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+
+for path in /sys/bus/platform/drivers/ideapad_acpi/*/conservation_mode; do
+  if [ -r "$path" ]; then
+    cat "$path"
+    exit 0
+  fi
+done
+
+echo "Lenovo conservation mode is not available on this system" >&2
+exit 1
