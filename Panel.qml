@@ -261,7 +261,7 @@ Panel {
         id: batteryBody
         anchors.centerIn: parent
         width: parent.width - Style.space(10)
-        height: Math.min(parent.height * 0.45, Style.space(15))
+        height: Math.min(parent.height * 0.40, Style.space(13))
         radius: height * 0.28
         color: "transparent"
         border.width: Math.max(2, Style.space(1))
