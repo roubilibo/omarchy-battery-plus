@@ -272,6 +272,7 @@ Panel {
           anchors.left: parent.left
           anchors.right: parent.right
           anchors.verticalCenter: parent.verticalCenter
+          anchors.verticalCenterOffset: Style.space(1)
           text: Math.round(root.batteryFraction * 100)
           color: root.batteryStatusColor
           font.family: root.bar ? root.bar.fontFamily : Style.font.family
