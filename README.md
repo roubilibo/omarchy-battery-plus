@@ -7,6 +7,7 @@ horizontal battery indicator and a richer battery/power panel.
 
 - Horizontal battery outline with the current percentage inside.
 - Right-click the bar widget to show or hide the percentage.
+- Shows battery health in the panel and bar tooltip.
 - Color states:
   - green while charging;
   - red below 20% while discharging;

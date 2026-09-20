@@ -88,6 +88,12 @@ Panel {
     return Model.batteryFraction(d)
   }
 
+  readonly property string batteryHealthText: {
+    var d = UPower.displayDevice
+    if (!d || !d.isPresent || !d.healthSupported || !isFinite(d.healthPercentage)) return "—"
+    return (Math.round(d.healthPercentage * 10) / 10).toFixed(1) + "%"
+  }
+
   readonly property bool charging: {
     var d = UPower.displayDevice
     return d && d.isPresent && !UPower.onBattery && !root.batteryFlowIdle
@@ -427,7 +433,7 @@ Panel {
     foreground: root.batteryStatusColor
     opticalSize: Style.bar.iconCanvas * 2
     slotSize: Style.bar.iconSlot * 1.35
-    tooltipText: "Battery " + Math.round(root.batteryFraction * 100) + "% — " + root.batteryStatusLabel
+  tooltipText: "Battery " + Math.round(root.batteryFraction * 100) + "% — Health " + root.batteryHealthText + " — " + root.batteryStatusLabel
     onPressed: function(b) {
       if (!root.batteryPresent) return
       if (b === Qt.RightButton) root.togglePercentage()
@@ -580,6 +586,7 @@ Panel {
             width: (parent.width - parent.spacing) / 2
             spacing: Style.spacing.labelGap
             InfoPair { label: "Battery size"; value: root.batteryInfo.size || "" }
+            InfoPair { label: "Battery health"; value: root.batteryHealthText }
             InfoPair { label: "Charge cycles"; value: root.batteryInfo.cycles || "—" }
           }
 
