@@ -260,7 +260,7 @@ Panel {
       Rectangle {
         id: batteryBody
         anchors.centerIn: parent
-        width: parent.width - Style.space(10)
+        width: parent.width - Style.space(6)
         height: Math.min(parent.height * 0.42, Style.space(14))
         radius: height * 0.28
         color: "transparent"
