@@ -11,7 +11,7 @@ Panel {
   moduleName: "roubilibo.battery-plus"
   ipcTarget: "roubilibo.battery-plus"
   // manageIpc: false so this panel can own the single IpcHandler the target
-  // permits — needed for the togglePercentage method below.
+  // permits — needed for the bar display toggle below.
   manageIpc: false
   property var batteryInfo: ({})
   property var batteryHealthInfo: ({})
@@ -28,6 +28,7 @@ Panel {
   readonly property string conservationToggleScript: root.pluginRoot + "/scripts/toggle-conservation"
   readonly property string batteryHealthScript: root.pluginRoot + "/scripts/battery-health"
   readonly property bool showPercentage: setting("showPercentage", false) === true
+  readonly property bool showFill: setting("showFill", false) === true
   // With the percentage shown the button paints a text block wider than an
   // icon, so the open-panel mark takes the painted width instead of the
   // icon-sized fraction of the slot the fallback assumes.
@@ -241,7 +242,11 @@ Panel {
   }
 
   function togglePercentage() {
-    root.settings = Object.assign({}, root.settings, { showPercentage: !root.showPercentage })
+    var nextPercentage = !root.showPercentage
+    root.settings = Object.assign({}, root.settings, {
+      showPercentage: nextPercentage,
+      showFill: !nextPercentage
+    })
     if (root.bar && root.bar.shell) root.bar.shell.updateEntryInline(root.moduleName, root.settings)
   }
 
@@ -266,6 +271,17 @@ Panel {
         color: "transparent"
         border.width: Math.max(2, Style.space(1))
         border.color: parent.outlineColor
+        clip: true
+
+        Rectangle {
+          visible: root.showFill
+          x: Style.space(2)
+          y: Style.space(2)
+          width: Math.max(0, (parent.width - Style.space(4)) * root.batteryFraction)
+          height: Math.max(0, parent.height - Style.space(4))
+          radius: Math.max(1, height * 0.22)
+          color: root.batteryStatusColor
+        }
 
         Text {
           visible: root.showPercentage

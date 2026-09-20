@@ -5,8 +5,8 @@ horizontal battery indicator and a richer battery/power panel.
 
 ## Features
 
-- Horizontal battery outline with the current percentage inside.
-- Right-click the bar widget to show or hide the percentage.
+- Horizontal battery outline with either the current percentage or a charge fill inside.
+- Right-click the bar widget to toggle between percentage and charge-fill modes.
 - Shows battery health in the panel and bar tooltip.
 - Color states:
   - green while charging;
@@ -36,8 +36,8 @@ Place the widget in the bar if needed:
 omarchy bar move roubilibo.battery-plus --section right
 ```
 
-Click the widget to open its panel. Right-click it to toggle the percentage in
-the bar.
+Click the widget to open its panel. Right-click it to toggle between percentage
+and charge-fill modes in the bar.
 
 ## Remove
 
