@@ -433,7 +433,7 @@ Panel {
     foreground: root.batteryStatusColor
     opticalSize: Style.bar.iconCanvas * 2
     slotSize: Style.bar.iconSlot * 1.35
-  tooltipText: "Battery " + Math.round(root.batteryFraction * 100) + "% — Health " + root.batteryHealthText + " — " + root.batteryStatusLabel
+    tooltipText: "Battery " + Math.round(root.batteryFraction * 100) + "% — Health " + root.batteryHealthText + " — " + root.batteryStatusLabel
     onPressed: function(b) {
       if (!root.batteryPresent) return
       if (b === Qt.RightButton) root.togglePercentage()
