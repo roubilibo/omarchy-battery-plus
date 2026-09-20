@@ -269,7 +269,7 @@ Panel {
         height: Math.min(parent.height * 0.42, Style.space(14))
         radius: height * 0.28
         color: "transparent"
-        border.width: Math.max(2, Style.space(1))
+        border.width: 1
         border.color: parent.outlineColor
         clip: true
 
