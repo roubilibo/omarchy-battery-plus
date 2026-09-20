@@ -90,8 +90,13 @@ Panel {
 
   readonly property string batteryHealthText: {
     var d = UPower.displayDevice
-    if (!d || !d.isPresent || !d.healthSupported || !isFinite(d.healthPercentage)) return "—"
-    return (Math.round(d.healthPercentage * 10) / 10).toFixed(1) + "%"
+    if (!d || !d.isPresent) return "—"
+    // Some Quickshell/UPower combinations do not mark healthSupported even
+    // though energyCapacity contains the calculated design-capacity health.
+    var health = Number(d.healthPercentage)
+    if (!isFinite(health) || health <= 0) health = Number(d.energyCapacity)
+    if (!isFinite(health) || health <= 0) return "—"
+    return (Math.round(health * 10) / 10).toFixed(1) + "%"
   }
 
   readonly property bool charging: {
