@@ -246,7 +246,7 @@ Panel {
         id: batteryBody
         anchors.centerIn: parent
         width: parent.width - Style.space(6)
-        height: Math.min(parent.height * 0.42, Style.space(14))
+        height: Math.min(parent.height * 0.45, Style.space(15))
         radius: height * 0.28
         color: "transparent"
         border.width: Math.max(2, Style.space(1))
@@ -264,12 +264,16 @@ Panel {
 
         Text {
           visible: root.showPercentage
-          anchors.centerIn: parent
+          anchors.left: parent.left
+          anchors.right: parent.right
+          anchors.verticalCenter: parent.verticalCenter
           text: Math.round(root.batteryFraction * 100)
           color: root.batteryTextColor
           font.family: root.bar ? root.bar.fontFamily : Style.font.family
           font.pixelSize: Math.max(7, Math.min(10, Style.font.bodySmall))
           font.bold: true
+          horizontalAlignment: Text.AlignHCenter
+          verticalAlignment: Text.AlignVCenter
           textFormat: Text.PlainText
         }
       }
