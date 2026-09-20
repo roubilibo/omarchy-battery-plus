@@ -1,0 +1,20 @@
+#!/bin/sh
+set -eu
+
+for battery in /sys/class/power_supply/BAT*; do
+  [ -d "$battery" ] || continue
+  [ -r "$battery/energy_full" ] || continue
+  [ -r "$battery/energy_full_design" ] || continue
+
+  current=$(cat "$battery/energy_full")
+  design=$(cat "$battery/energy_full_design")
+
+  awk -v current="$current" -v design="$design" 'BEGIN {
+    if (design <= 0) exit 1
+    printf "health\t%.1f\n", current / design * 100
+    printf "size\t%.0fWh | %.0fWh\n", design / 1000000, current / 1000000
+  }'
+  exit 0
+done
+
+exit 1

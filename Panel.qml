@@ -14,6 +14,7 @@ Panel {
   // permits — needed for the togglePercentage method below.
   manageIpc: false
   property var batteryInfo: ({})
+  property var batteryHealthInfo: ({})
   property var systemInfo: ({})
   property var profiles: []
   property string activeProfile: ""
@@ -25,6 +26,7 @@ Panel {
   readonly property string pluginRoot: String(Qt.resolvedUrl("Panel.qml")).replace(/^file:\/\//, "").replace(/\/Panel\.qml$/, "")
   readonly property string conservationStatusScript: root.pluginRoot + "/scripts/conservation-status"
   readonly property string conservationToggleScript: root.pluginRoot + "/scripts/toggle-conservation"
+  readonly property string batteryHealthScript: root.pluginRoot + "/scripts/battery-health"
   readonly property bool showPercentage: setting("showPercentage", false) === true
   // With the percentage shown the button paints a text block wider than an
   // icon, so the open-panel mark takes the painted width instead of the
@@ -89,15 +91,16 @@ Panel {
   }
 
   readonly property string batteryHealthText: {
-    var d = UPower.displayDevice
-    if (!d || !d.isPresent) return "—"
-    // Some Quickshell/UPower combinations do not mark healthSupported even
-    // though energyCapacity contains the calculated design-capacity health.
-    var health = Number(d.healthPercentage)
-    if (!isFinite(health) || health <= 0) health = Number(d.energyCapacity)
+    var health = Number(root.batteryHealthInfo.health)
+    if (!isFinite(health) || health <= 0) {
+      var d = UPower.displayDevice
+      health = d && d.isPresent ? Number(d.healthPercentage) : NaN
+    }
     if (!isFinite(health) || health <= 0) return "—"
     return (Math.round(health * 10) / 10).toFixed(1) + "%"
   }
+
+  readonly property string batterySizeText: root.batteryHealthInfo.size || root.batteryInfo.size || "—"
 
   readonly property bool charging: {
     var d = UPower.displayDevice
@@ -185,6 +188,7 @@ Panel {
     if (!batteryPresent) return
 
     if (!batteryProc.running) batteryProc.running = true
+    if (!batteryHealthProc.running) batteryHealthProc.running = true
     if (!profilesProc.running) profilesProc.running = true
     if (!systemProc.running) systemProc.running = true
     if (!conservationStatusProc.running) conservationStatusProc.running = true
@@ -212,6 +216,7 @@ Panel {
     // around AC plug/unplug events. Avoids the section collapsing mid-transition.
     if (Object.keys(next).length === 0) return
     if (targetName === "battery") batteryInfo = next
+    else if (targetName === "health") batteryHealthInfo = next
     else systemInfo = next
   }
 
@@ -339,6 +344,12 @@ Panel {
   }
 
   Process {
+    id: batteryHealthProc
+    command: [root.batteryHealthScript]
+    stdout: StdioCollector { waitForEnd: true; onStreamFinished: root.updateKeyValue(text, "health") }
+  }
+
+  Process {
     id: profilesProc
     command: ["omarchy-powerprofiles-list", "--active-state"]
     stdout: StdioCollector { waitForEnd: true; onStreamFinished: root.updateProfiles(text) }
@@ -438,7 +449,7 @@ Panel {
     foreground: root.batteryStatusColor
     opticalSize: Style.bar.iconCanvas * 2
     slotSize: Style.bar.iconSlot * 1.35
-    tooltipText: "Battery " + Math.round(root.batteryFraction * 100) + "% — Health " + root.batteryHealthText + " — " + root.batteryStatusLabel
+    tooltipText: "Battery " + Math.round(root.batteryFraction * 100) + "% — Power: " + (root.activeProfile || "—")
     onPressed: function(b) {
       if (!root.batteryPresent) return
       if (b === Qt.RightButton) root.togglePercentage()
@@ -590,7 +601,7 @@ Panel {
           Column {
             width: (parent.width - parent.spacing) / 2
             spacing: Style.spacing.labelGap
-            InfoPair { label: "Battery size"; value: root.batteryInfo.size || "" }
+            InfoPair { label: "Battery size"; value: root.batterySizeText }
             InfoPair { label: "Battery health"; value: root.batteryHealthText }
             InfoPair { label: "Charge cycles"; value: root.batteryInfo.cycles || "—" }
           }
