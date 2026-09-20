@@ -245,8 +245,9 @@ Panel {
     if (root.bar && root.bar.shell) root.bar.shell.updateEntryInline(root.moduleName, root.settings)
   }
 
-  // Apple-style horizontal battery: an outlined body, colored charge fill,
-  // and an optional percentage rendered inside the battery.
+  // Apple-style horizontal battery: a clean outline with an optional
+  // percentage rendered inside the battery. The status color is carried by
+  // the outline instead of a fill so high charge levels stay visually light.
   Component {
     id: batteryIconComponent
 
@@ -254,9 +255,7 @@ Panel {
       id: batteryIconRoot
       anchors.fill: parent
 
-      readonly property color outlineColor: root.bar ? root.bar.foreground : Color.foreground
-      readonly property real level: Math.max(0, Math.min(1, root.batteryFraction))
-      readonly property real inset: Math.max(2, Style.space(2))
+      readonly property color outlineColor: root.batteryStatusColor
 
       Rectangle {
         id: batteryBody
@@ -267,16 +266,6 @@ Panel {
         color: "transparent"
         border.width: Math.max(2, Style.space(1))
         border.color: parent.outlineColor
-        clip: true
-
-        Rectangle {
-          x: batteryIconRoot.inset
-          y: batteryIconRoot.inset
-          width: Math.max(0, (parent.width - batteryIconRoot.inset * 2) * batteryIconRoot.level)
-          height: Math.max(0, parent.height - batteryIconRoot.inset * 2)
-          radius: Math.max(1, height * 0.22)
-          color: root.batteryStatusColor
-        }
 
         Text {
           visible: root.showPercentage
@@ -284,7 +273,7 @@ Panel {
           anchors.right: parent.right
           anchors.verticalCenter: parent.verticalCenter
           text: Math.round(root.batteryFraction * 100)
-          color: root.batteryTextColor
+          color: root.batteryStatusColor
           font.family: root.bar ? root.bar.fontFamily : Style.font.family
           font.pixelSize: Math.max(7, Math.min(10, Style.font.bodySmall))
           font.bold: true
