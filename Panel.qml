@@ -20,17 +20,12 @@ Panel {
   property string activeProfile: ""
   property int profileIndex: 0
   property bool cursorActive: false
-  property bool conservationSupported: false
-  property bool conservationEnabled: false
-  property bool conservationBusy: false
   property var chargeTypeInfo: ({})
   property var chargeTypes: []
   property string activeChargeType: ""
   property bool chargeTypeSupported: false
   property bool chargeTypeBusy: false
   readonly property string pluginRoot: String(Qt.resolvedUrl("Panel.qml")).replace(/^file:\/\//, "").replace(/\/Panel\.qml$/, "")
-  readonly property string conservationStatusScript: root.pluginRoot + "/scripts/conservation-status"
-  readonly property string conservationToggleScript: root.pluginRoot + "/scripts/toggle-conservation"
   readonly property string chargeTypesStatusScript: root.pluginRoot + "/scripts/charge-types-status"
   readonly property string chargeTypeSetScript: root.pluginRoot + "/scripts/set-charge-type"
   readonly property string batteryHealthScript: root.pluginRoot + "/scripts/battery-health"
@@ -131,7 +126,7 @@ Panel {
 
   readonly property color batteryStatusColor: {
     if (root.discharging && root.batteryFraction <= 0.20) return "#ff5b5b"
-    if ((root.conservationSupported && root.conservationEnabled || root.longLifeActive) && !root.discharging) return "#5da9ff"
+    if (root.longLifeActive && !root.discharging) return "#5da9ff"
     if (root.powerSaverActive) return "#f0a23a"
     if (root.physicallyCharging) return "#55d98a"
     return root.bar ? root.bar.foreground : Color.foreground
@@ -148,7 +143,6 @@ Panel {
 
   readonly property string batteryStatusLabel: {
     if (root.discharging && root.batteryFraction <= 0.20) return "Low battery"
-    if (root.conservationSupported && root.conservationEnabled) return "Conservation on"
     if (root.longLifeActive && !root.discharging) return "Long Life on"
     if (root.powerSaverActive) return "Power saver"
     if (root.physicallyCharging) return "Charging"
@@ -207,24 +201,7 @@ Panel {
     if (!batteryHealthProc.running) batteryHealthProc.running = true
     if (!profilesProc.running) profilesProc.running = true
     if (!systemProc.running) systemProc.running = true
-    if (!conservationStatusProc.running) conservationStatusProc.running = true
     if (!chargeTypesProc.running) chargeTypesProc.running = true
-  }
-
-  function updateConservation(raw) {
-    var value = String(raw || "").trim()
-    if (value !== "0" && value !== "1") {
-      conservationSupported = false
-      return
-    }
-    conservationSupported = true
-    conservationEnabled = value === "1"
-  }
-
-  function toggleConservation() {
-    if (!conservationSupported || conservationBusy || conservationActionProc.running) return
-    conservationBusy = true
-    conservationActionProc.running = true
   }
 
   function updateChargeTypes(raw) {
@@ -400,24 +377,6 @@ Panel {
   }
 
   Process {
-    id: conservationStatusProc
-    command: [root.conservationStatusScript]
-    stdout: StdioCollector { waitForEnd: true; onStreamFinished: root.updateConservation(text) }
-    onExited: function(exitCode, exitStatus) {
-      if (exitCode !== 0) root.conservationSupported = false
-    }
-  }
-
-  Process {
-    id: conservationActionProc
-    command: [root.conservationToggleScript]
-    onExited: {
-      root.conservationBusy = false
-      root.refresh()
-    }
-  }
-
-  Process {
     id: chargeTypesProc
     command: [root.chargeTypesStatusScript]
     stdout: StdioCollector { waitForEnd: true; onStreamFinished: root.updateChargeTypes(text) }
@@ -446,7 +405,6 @@ Panel {
     onTriggered: {
       if (!batteryProc.running) batteryProc.running = true
       if (!profilesProc.running) profilesProc.running = true
-      if (!conservationStatusProc.running) conservationStatusProc.running = true
       if (!chargeTypesProc.running) chargeTypesProc.running = true
     }
   }
@@ -777,40 +735,6 @@ Panel {
           }
         }
 
-        PanelSeparator {
-          visible: root.conservationSupported
-          foreground: root.bar.foreground
-        }
-
-        Column {
-          visible: root.conservationSupported
-          width: parent.width
-          spacing: Style.space(10)
-
-          PanelSectionHeader {
-            text: "BATTERY CONSERVATION"
-            foreground: root.bar.foreground
-            fontFamily: root.bar.fontFamily
-          }
-
-          Button {
-            width: parent.width
-            iconText: root.conservationEnabled ? "󰂄" : "󰂃"
-            iconSize: Style.font.title
-            text: root.conservationBusy
-              ? "Applying…"
-              : (root.conservationEnabled ? "Enabled" : "Disabled")
-            fontSize: Style.font.bodySmall
-            foreground: root.bar.foreground
-            fontFamily: root.bar.fontFamily
-            horizontalPadding: Style.spacing.controlPaddingX
-            verticalPadding: Style.spacing.controlPaddingY + Style.space(2)
-            bordered: true
-            active: root.conservationEnabled
-            enabled: !root.conservationBusy
-            onClicked: root.toggleConservation()
-          }
-        }
       }
     }
   }
