@@ -1,0 +1,8 @@
+[Unit]
+Description=Apply Battery Plus overnight charge mode
+After=local-fs.target
+
+[Service]
+Type=oneshot
+Environment=OVERNIGHT_CHARGE_CONFIG=/home/roubilibo/.config/omarchy/overnight-charge.conf
+ExecStart=/usr/local/libexec/omarchy-overnight-charge

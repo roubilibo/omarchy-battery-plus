@@ -1,0 +1,32 @@
+#!/bin/sh
+set -eu
+
+config=${OVERNIGHT_CHARGE_CONFIG:-/home/roubilibo/.config/omarchy/overnight-charge.conf}
+[ -r "$config" ] || exit 0
+
+enabled=$(sed -n 's/^enabled=//p' "$config" | sed -n '1p')
+[ "$enabled" = "1" ] || exit 0
+
+hour=$(/usr/bin/date +%H)
+case "$hour" in
+  06|07|08|09|10|11|12|13|14|15|16|17) target=Standard ;;
+  *) target=Long_Life ;;
+esac
+
+for battery in /sys/class/power_supply/BAT*; do
+  path="$battery/charge_types"
+  [ -r "$path" ] || continue
+
+  available=$(cat "$path" | sed 's/\[//g; s/\]//g')
+  if ! printf '%s\n' "$available" | grep -F -w -- "$target" >/dev/null; then
+    echo "Charge type is not available: $target" >&2
+    exit 1
+  fi
+
+  active=$(cat "$path" | sed -n 's/.*\[\([^]]*\)\].*/\1/p')
+  [ "$active" = "$target" ] && exit 0
+  printf '%s\n' "$target" > "$path"
+  exit 0
+done
+
+exit 0

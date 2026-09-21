@@ -66,6 +66,16 @@ function chargeTypeIcon(name) {
   return "󰂑"
 }
 
+function parseOvernightCharge(raw) {
+  var info = parseKeyValue(raw)
+  return {
+    supported: info.supported === "1",
+    enabled: info.enabled === "1",
+    day: String(info.day || "06:00-18:00"),
+    night: String(info.night || "18:00-06:00")
+  }
+}
+
 function profileIcon(name) {
   if (name === "power-saver") return "󰌪"
   if (name === "balanced") return "󰊚"
@@ -126,6 +136,7 @@ if (typeof module !== "undefined") {
     parseChargeTypes: parseChargeTypes,
     chargeTypeLabel: chargeTypeLabel,
     chargeTypeIcon: chargeTypeIcon,
+    parseOvernightCharge: parseOvernightCharge,
     profileIcon: profileIcon,
     batteryFraction: batteryFraction,
     chargeThresholdActive: chargeThresholdActive,

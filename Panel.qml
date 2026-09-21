@@ -25,9 +25,15 @@ Panel {
   property string activeChargeType: ""
   property bool chargeTypeSupported: false
   property bool chargeTypeBusy: false
+  property var overnightChargeInfo: ({})
+  property bool overnightChargeSupported: false
+  property bool overnightChargeEnabled: false
+  property bool overnightChargeBusy: false
   readonly property string pluginRoot: String(Qt.resolvedUrl("Panel.qml")).replace(/^file:\/\//, "").replace(/\/Panel\.qml$/, "")
   readonly property string chargeTypesStatusScript: root.pluginRoot + "/scripts/charge-types-status"
   readonly property string chargeTypeSetScript: root.pluginRoot + "/scripts/set-charge-type"
+  readonly property string overnightChargeStatusScript: root.pluginRoot + "/scripts/overnight-charge-status"
+  readonly property string overnightChargeToggleScript: root.pluginRoot + "/scripts/overnight-charge-toggle"
   readonly property string batteryHealthScript: root.pluginRoot + "/scripts/battery-health"
   readonly property bool showPercentage: setting("showPercentage", false) === true
   readonly property bool showFill: setting("showFill", false) === true
@@ -202,6 +208,7 @@ Panel {
     if (!profilesProc.running) profilesProc.running = true
     if (!systemProc.running) systemProc.running = true
     if (!chargeTypesProc.running) chargeTypesProc.running = true
+    if (!overnightChargeProc.running) overnightChargeProc.running = true
   }
 
   function updateChargeTypes(raw) {
@@ -214,10 +221,24 @@ Panel {
   }
 
   function setChargeType(type) {
-    if (!type || chargeTypeBusy || chargeTypeActionProc.running) return
+    if (!type || chargeTypeBusy || chargeTypeActionProc.running || overnightChargeEnabled) return
     chargeTypeBusy = true
     chargeTypeActionProc.command = [root.chargeTypeSetScript, type]
     chargeTypeActionProc.running = true
+  }
+
+  function updateOvernightCharge(raw) {
+    var parsed = Model.parseOvernightCharge(raw)
+    overnightChargeInfo = Model.parseKeyValue(raw)
+    overnightChargeSupported = parsed.supported
+    overnightChargeEnabled = parsed.enabled
+  }
+
+  function toggleOvernightCharge() {
+    if (!overnightChargeSupported || overnightChargeBusy || overnightChargeActionProc.running) return
+    overnightChargeBusy = true
+    overnightChargeActionProc.command = [root.overnightChargeToggleScript, overnightChargeEnabled ? "off" : "on"]
+    overnightChargeActionProc.running = true
   }
 
   function updateKeyValue(raw, targetName) {
@@ -383,9 +404,23 @@ Panel {
   }
 
   Process {
+    id: overnightChargeProc
+    command: [root.overnightChargeStatusScript]
+    stdout: StdioCollector { waitForEnd: true; onStreamFinished: root.updateOvernightCharge(text) }
+  }
+
+  Process {
     id: chargeTypeActionProc
     onExited: {
       root.chargeTypeBusy = false
+      root.refresh()
+    }
+  }
+
+  Process {
+    id: overnightChargeActionProc
+    onExited: {
+      root.overnightChargeBusy = false
       root.refresh()
     }
   }
@@ -406,6 +441,7 @@ Panel {
       if (!batteryProc.running) batteryProc.running = true
       if (!profilesProc.running) profilesProc.running = true
       if (!chargeTypesProc.running) chargeTypesProc.running = true
+      if (!overnightChargeProc.running) overnightChargeProc.running = true
     }
   }
 
@@ -696,10 +732,41 @@ Panel {
           width: parent.width
           spacing: Style.space(10)
 
-          PanelSectionHeader {
-            text: "CHARGE MODE"
-            foreground: root.bar.foreground
-            fontFamily: root.bar.fontFamily
+          Row {
+            width: parent.width
+            spacing: Style.space(8)
+
+            PanelSectionHeader {
+              width: parent.width - overnightChargeControl.width - parent.spacing
+              text: "CHARGE MODE"
+              foreground: root.bar.foreground
+              fontFamily: root.bar.fontFamily
+              anchors.verticalCenter: parent.verticalCenter
+            }
+
+            Row {
+              id: overnightChargeControl
+              spacing: Style.space(6)
+              anchors.verticalCenter: parent.verticalCenter
+
+              PanelSectionHeader {
+                text: "Overnight"
+                foreground: root.bar.foreground
+                fontFamily: root.bar.fontFamily
+                anchors.verticalCenter: parent.verticalCenter
+              }
+
+              ToggleSwitch {
+                id: overnightChargeToggle
+                checked: root.overnightChargeEnabled
+                busy: root.overnightChargeBusy
+                enabled: root.overnightChargeSupported && !root.overnightChargeBusy
+                foreground: root.bar.foreground
+                accent: Color.accent
+                anchors.verticalCenter: parent.verticalCenter
+                onToggled: root.toggleOvernightCharge()
+              }
+            }
           }
 
           Row {
@@ -728,7 +795,7 @@ Panel {
                 verticalPadding: Style.spacing.controlPaddingY + Style.space(2)
                 bordered: true
                 active: root.activeChargeType === String(modelData)
-                enabled: !root.chargeTypeBusy
+                enabled: !root.chargeTypeBusy && !root.overnightChargeEnabled
                 onClicked: root.setChargeType(String(modelData))
               }
             }

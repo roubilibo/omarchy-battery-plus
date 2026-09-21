@@ -1,0 +1,9 @@
+[Unit]
+Description=Apply Battery Plus charge mode after setting changes
+
+[Path]
+PathChanged=/home/roubilibo/.config/omarchy/overnight-charge.conf
+Unit=omarchy-overnight-charge.service
+
+[Install]
+WantedBy=multi-user.target
