@@ -103,6 +103,12 @@ Panel {
 
   readonly property string batterySizeText: root.batteryHealthInfo.size || root.batteryInfo.size || "—"
 
+  readonly property string batteryTooltipTime: {
+    if (root.chargeThresholdActive) return "Holding"
+    if (root.batteryFull) return "Fully charged"
+    return root.batteryInfo.time || "—"
+  }
+
   readonly property bool charging: {
     var d = UPower.displayDevice
     return d && d.isPresent && !UPower.onBattery && !root.batteryFlowIdle
@@ -398,6 +404,7 @@ Panel {
     repeat: true
     triggeredOnStart: true
     onTriggered: {
+      if (!batteryProc.running) batteryProc.running = true
       if (!profilesProc.running) profilesProc.running = true
       if (!conservationStatusProc.running) conservationStatusProc.running = true
     }
@@ -455,7 +462,8 @@ Panel {
     foreground: root.batteryStatusColor
     opticalSize: Style.bar.iconCanvas * 2
     slotSize: Style.bar.iconSlot * 1.35
-    tooltipText: "Battery " + Math.round(root.batteryFraction * 100) + "% — Power: " + (root.activeProfile || "—")
+    tooltipText: "Battery " + Math.round(root.batteryFraction * 100) + "% — "
+      + (root.discharging ? "Time left: " : "Time to full: ") + root.batteryTooltipTime
     onPressed: function(b) {
       if (!root.batteryPresent) return
       if (b === Qt.RightButton) root.togglePercentage()

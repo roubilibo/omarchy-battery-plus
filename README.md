@@ -7,7 +7,9 @@ horizontal battery indicator and a richer battery/power panel.
 
 - Horizontal battery outline with either the current percentage or a charge fill inside.
 - Right-click the bar widget to toggle between percentage and charge-fill modes.
-- Shows battery health in the panel and bar tooltip.
+- Shows battery health in the panel and battery percentage plus time remaining
+  in the bar tooltip. While charging, the tooltip shows the estimated time to
+  full instead.
 - Color states:
   - green while charging;
   - red below 20% while discharging;
@@ -30,6 +32,10 @@ horizontal battery indicator and a richer battery/power panel.
 omarchy plugin add https://github.com/roubilibo/omarchy-battery-plus.git --enable
 ```
 
+This is the repository used by this project. Omarchy clones it as a
+git-managed plugin at `~/.config/omarchy/plugins/roubilibo.battery-plus/`.
+For unattended installation, append `--yes` to skip the confirmation prompt.
+
 Place the widget in the bar if needed:
 
 ```sh
@@ -37,7 +43,8 @@ omarchy bar move roubilibo.battery-plus --section right
 ```
 
 Click the widget to open its panel. Right-click it to toggle between percentage
-and charge-fill modes in the bar.
+and charge-fill modes in the bar. The bar tooltip shows the current battery
+percentage and time left (or time to full while charging).
 
 ## Remove
 
@@ -47,10 +54,11 @@ omarchy plugin remove roubilibo.battery-plus
 
 ## Development
 
-The development copy lives at:
+For local development, clone the same remote repository somewhere in your
+Omarchy workspace:
 
-```text
-~/Omarchy/roubilibo.battery-plus
+```sh
+git clone https://github.com/roubilibo/omarchy-battery-plus.git ~/Omarchy/roubilibo.battery-plus
 ```
 
 Validate the Omarchy manifest with:
