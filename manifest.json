@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "author": "Roubilibo",
   "license": "MIT",
-  "description": "Apple-style battery status, power profile, and Lenovo conservation controls",
+  "description": "Apple-style battery status, power profile, Lenovo conservation, and charge mode controls",
   "kinds": [
     "bar-widget"
   ],
@@ -14,7 +14,7 @@
   },
   "barWidget": {
     "displayName": "Battery Plus",
-    "description": "Apple-style battery status, power profile, and Lenovo conservation controls",
+    "description": "Apple-style battery status, power profile, Lenovo conservation, and charge mode controls",
     "category": "System",
     "allowMultiple": false
   }

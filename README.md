@@ -14,10 +14,15 @@ horizontal battery indicator and a richer battery/power panel.
   - green while charging;
   - red below 20% while discharging;
   - orange for the `power-saver` profile;
-  - blue for Lenovo conservation mode while connected to AC power.
+  - blue for Lenovo conservation mode or `Long_Life` charge mode while connected
+    to AC power.
 - Left-click opens the battery panel with battery statistics and power profiles.
 - Detects and toggles Lenovo IdeaPad conservation mode through the Omarchy Polkit
   agent when the kernel exposes it.
+- Shows and changes the kernel `charge_types` interface when available, including
+  Fast, Standard, and Long Life modes.
+- Keeps the legacy `conservation_mode` control and the newer `charge_types`
+  control visible as separate interfaces.
 
 ## Requirements
 

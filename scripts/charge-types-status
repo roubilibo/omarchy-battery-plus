@@ -1,0 +1,18 @@
+#!/bin/sh
+set -eu
+
+for battery in /sys/class/power_supply/BAT*; do
+  path="$battery/charge_types"
+  [ -r "$path" ] || continue
+
+  raw=$(cat "$path")
+  available=$(printf '%s\n' "$raw" | sed 's/\[//g; s/\]//g')
+  active=$(printf '%s\n' "$raw" | sed -n 's/.*\[\([^]]*\)\].*/\1/p')
+
+  printf 'supported\t1\n'
+  printf 'available\t%s\n' "$available"
+  printf 'active\t%s\n' "$active"
+  exit 0
+done
+
+printf 'supported\t0\n'

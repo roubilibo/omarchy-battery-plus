@@ -38,6 +38,34 @@ function parseProfiles(raw, previousIndex) {
   }
 }
 
+function parseChargeTypes(raw) {
+  var info = parseKeyValue(raw)
+  var values = String(info.available || "").trim().split(/\s+/)
+  var types = []
+  for (var i = 0; i < values.length; i++) {
+    if (values[i] && types.indexOf(values[i]) < 0) types.push(values[i])
+  }
+  return {
+    supported: info.supported === "1" && types.length > 0,
+    types: types,
+    active: String(info.active || "").trim()
+  }
+}
+
+function chargeTypeLabel(name) {
+  if (name === "Long_Life") return "Long Life"
+  if (name === "Adaptive") return "Adaptive"
+  if (name === "Custom") return "Custom"
+  return String(name || "").replace(/_/g, " ")
+}
+
+function chargeTypeIcon(name) {
+  if (name === "Fast") return "󰚥"
+  if (name === "Long_Life") return "󰂄"
+  if (name === "Standard") return "󰂃"
+  return "󰂑"
+}
+
 function profileIcon(name) {
   if (name === "power-saver") return "󰌪"
   if (name === "balanced") return "󰊚"
@@ -95,6 +123,9 @@ if (typeof module !== "undefined") {
     selectProfileIndex: selectProfileIndex,
     parseKeyValue: parseKeyValue,
     parseProfiles: parseProfiles,
+    parseChargeTypes: parseChargeTypes,
+    chargeTypeLabel: chargeTypeLabel,
+    chargeTypeIcon: chargeTypeIcon,
     profileIcon: profileIcon,
     batteryFraction: batteryFraction,
     chargeThresholdActive: chargeThresholdActive,

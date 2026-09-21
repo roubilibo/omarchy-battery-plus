@@ -1,0 +1,29 @@
+#!/bin/sh
+set -eu
+
+requested=${1:-}
+case "$requested" in
+  Fast|Standard|Trickle|Adaptive|Custom|Long_Life|Bypass) ;;
+  *)
+    echo "Unsupported charge type: ${requested:-<empty>}" >&2
+    exit 1
+    ;;
+esac
+
+for battery in /sys/class/power_supply/BAT*; do
+  path="$battery/charge_types"
+  [ -r "$path" ] || continue
+
+  available=$(cat "$path")
+  available=$(printf '%s\n' "$available" | sed 's/\[//g; s/\]//g')
+  printf '%s\n' "$available" | grep -F -w -- "$requested" >/dev/null || {
+    echo "Charge type is not available: $requested" >&2
+    exit 1
+  }
+
+  printf '%s\n' "$requested" | pkexec /usr/bin/tee "$path" >/dev/null
+  exit 0
+done
+
+echo "No battery charge_types interface is available" >&2
+exit 1
