@@ -19,9 +19,9 @@ horizontal battery indicator and a richer battery/power panel.
 - Shows and changes the kernel `charge_types` interface when available, including
   Fast, Standard, and Long Life modes.
 - Provides an optional `Overnight Charge` schedule: `Standard` from 06:00 to
-  18:00 and `Long Life` from 18:00 to 06:00. Enabling it requires graphical
-  administrator authentication; later transitions are applied by a privileged
-  systemd helper without prompting at each transition.
+  18:00 and `Long Life` from 18:00 to 06:00. Changing the toggle requires
+  graphical administrator authentication; later transitions are applied by a
+  privileged systemd helper without prompting at each transition.
 - Uses the newer `charge_types` interface as the single visible control. The
   legacy `conservation_mode` scripts remain in the repository for compatibility,
   but are no longer shown in the panel.

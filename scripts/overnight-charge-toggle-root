@@ -2,10 +2,14 @@
 set -eu
 
 [ "$(id -u)" -eq 0 ] || exit 1
-[ "${1:-}" = "on" ] || {
+action=${1:-}
+case "$action" in
+  on|off) ;;
+  *)
   echo "Usage: $0 on" >&2
   exit 2
-}
+    ;;
+esac
 
 user=roubilibo
 user_home=/home/$user
@@ -15,6 +19,12 @@ user_gid=$(id -g "$user")
 # Only allow the graphical user who requested the polkit action to enable this
 # machine-wide behavior. The fixed account also matches the systemd unit.
 [ "${PKEXEC_UID:-}" = "$user_uid" ] || exit 1
+
+log() {
+  /usr/bin/logger -t omarchy-overnight-charge -- "$*" 2>/dev/null || :
+}
+
+log "toggle action=$action user=$user"
 
 config_dir="$user_home/.config/omarchy"
 config="$config_dir/overnight-charge.conf"
@@ -26,15 +36,20 @@ umask 077
 tmp=$(mktemp "$config_dir/.overnight-charge.conf.XXXXXX")
 trap 'rm -f "$tmp"' EXIT HUP INT TERM
 
-printf 'enabled=1\nday_start=06:00\nday_end=18:00\n' > "$tmp"
+enabled=0
+if [ "$action" = "on" ]; then
+  enabled=1
+fi
+printf 'enabled=%s\nday_start=06:00\nday_end=18:00\n' "$enabled" > "$tmp"
 chown "$user_uid:$user_gid" "$tmp"
 chmod 600 "$tmp"
 mv -f "$tmp" "$config"
 chown "$user_uid:$user_gid" "$config"
 chmod 600 "$config"
 
-# Apply the current time slot immediately; the timer still covers future
-# transitions and the path unit covers later configuration changes.
-/usr/local/libexec/omarchy-overnight-charge
+# The path unit applies the new state exactly once after this atomic rename;
+# the timer covers the scheduled day/night transitions.
+log "config updated enabled=$enabled schedule=06:00-18:00"
+log "toggle action=$action queued systemd_apply=path"
 
 trap - EXIT HUP INT TERM

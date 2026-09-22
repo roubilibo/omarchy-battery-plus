@@ -2,26 +2,11 @@
 set -eu
 
 case "${1:-}" in
-  on) enabled=1 ;;
-  off) enabled=0 ;;
+  on|off) action=$1 ;;
   *)
     echo "Usage: $0 on|off" >&2
     exit 2
     ;;
 esac
 
-if [ "$enabled" = "1" ]; then
-  exec pkexec /usr/local/libexec/omarchy-overnight-charge-toggle on
-fi
-
-config_home=${XDG_CONFIG_HOME:-${HOME:-/home/roubilibo/.config}}
-config_dir="$config_home/omarchy"
-config="$config_dir/overnight-charge.conf"
-mkdir -p "$config_dir"
-umask 077
-tmp=$(mktemp "$config_dir/.overnight-charge.conf.XXXXXX")
-trap 'rm -f "$tmp"' EXIT HUP INT TERM
-
-printf 'enabled=%s\nday_start=06:00\nday_end=18:00\n' "$enabled" > "$tmp"
-mv -f "$tmp" "$config"
-trap - EXIT HUP INT TERM
+exec pkexec /usr/local/libexec/omarchy-overnight-charge-toggle "$action"
