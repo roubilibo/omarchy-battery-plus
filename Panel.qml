@@ -280,68 +280,6 @@ Panel {
     if (root.bar && root.bar.shell) root.bar.shell.updateEntryInline(root.moduleName, root.settings)
   }
 
-  // Apple-style horizontal battery: a clean outline with an optional
-  // percentage rendered inside the battery. The status color is carried by
-  // the outline instead of a fill so high charge levels stay visually light.
-  Component {
-    id: batteryIconComponent
-
-    Item {
-      id: batteryIconRoot
-      anchors.fill: parent
-
-      readonly property color outlineColor: root.batteryStatusColor
-
-      Rectangle {
-        id: batteryBody
-        anchors.centerIn: parent
-        width: parent.width - Style.space(6)
-        height: Math.min(parent.height * 0.42, Style.space(14))
-        radius: height * 0.28
-        color: "transparent"
-        border.width: 1
-        border.color: parent.outlineColor
-        clip: true
-
-        Rectangle {
-          visible: root.showFill
-          x: Style.space(2)
-          y: Style.space(2)
-          width: Math.max(0, (parent.width - Style.space(4)) * root.batteryFraction)
-          height: Math.max(0, parent.height - Style.space(4))
-          radius: Math.max(1, height * 0.22)
-          color: root.batteryStatusColor
-        }
-
-        Text {
-          visible: root.showPercentage
-          anchors.left: parent.left
-          anchors.right: parent.right
-          anchors.verticalCenter: parent.verticalCenter
-          anchors.verticalCenterOffset: Style.space(1)
-          text: Math.round(root.batteryFraction * 100)
-          color: root.batteryStatusColor
-          font.family: root.bar ? root.bar.fontFamily : Style.font.family
-          font.pixelSize: Math.max(7, Math.min(10, Style.font.bodySmall))
-          font.bold: true
-          horizontalAlignment: Text.AlignHCenter
-          verticalAlignment: Text.AlignVCenter
-          textFormat: Text.PlainText
-        }
-      }
-
-      Rectangle {
-        width: Style.space(3)
-        height: Math.max(Style.space(6), batteryBody.height * 0.32)
-        anchors.left: batteryBody.right
-        anchors.leftMargin: -Style.space(1)
-        anchors.verticalCenter: batteryBody.verticalCenter
-        radius: Style.space(1)
-        color: parent.outlineColor
-      }
-    }
-  }
-
   IpcHandler {
     target: "roubilibo.battery-plus"
 
@@ -493,12 +431,76 @@ Panel {
     anchors.fill: parent
     bar: root.bar
     text: ""
-    iconComponent: batteryIconComponent
+    hasVisualContent: true
     foreground: root.batteryStatusColor
-    opticalSize: Style.bar.iconCanvas * 2
     slotSize: Style.bar.iconSlot * 1.35
     tooltipText: "Battery " + Math.round(root.batteryFraction * 100) + "% — "
       + (root.discharging ? "Time left: " : "Time to full: ") + root.batteryTooltipTime
+
+    // Keep the percentage and battery outline at bar scale. The shared
+    // iconComponent renderer fits every custom icon to one glyph-sized box,
+    // which makes this combined indicator too small to read.
+    Item {
+      anchors.fill: parent
+      readonly property color outlineColor: root.batteryStatusColor
+
+      TextMetrics {
+        id: percentageMetrics
+        font.family: root.bar ? root.bar.fontFamily : Style.font.family
+        font.pixelSize: Math.max(7, Math.min(10, Style.font.bodySmall))
+        font.bold: true
+        text: "100"
+      }
+
+      Rectangle {
+        id: batteryBody
+        anchors.centerIn: parent
+        width: Math.ceil(percentageMetrics.advanceWidth) + Style.space(4)
+        height: Math.min(parent.height * 0.42, Style.space(14))
+        radius: height * 0.28
+        color: "transparent"
+        border.width: 1
+        border.color: parent.outlineColor
+        clip: true
+
+        Rectangle {
+          visible: root.showFill
+          x: Style.space(2)
+          y: Style.space(2)
+          width: Math.max(0, (parent.width - Style.space(4)) * root.batteryFraction)
+          height: Math.max(0, parent.height - Style.space(4))
+          radius: Math.max(1, height * 0.22)
+          color: root.batteryStatusColor
+        }
+
+        Text {
+          visible: root.showPercentage
+          anchors.left: parent.left
+          anchors.right: parent.right
+          anchors.verticalCenter: parent.verticalCenter
+          anchors.verticalCenterOffset: Style.space(1)
+          text: Math.round(root.batteryFraction * 100)
+          color: root.batteryStatusColor
+          font.family: percentageMetrics.font.family
+          font.pixelSize: percentageMetrics.font.pixelSize
+          font.bold: percentageMetrics.font.bold
+          horizontalAlignment: Text.AlignHCenter
+          verticalAlignment: Text.AlignVCenter
+          textFormat: Text.PlainText
+        }
+      }
+
+      Rectangle {
+        width: Style.space(3)
+        height: Math.max(Style.space(6), batteryBody.height * 0.32)
+        anchors.left: batteryBody.right
+        anchors.leftMargin: -Style.space(1)
+        anchors.verticalCenter: batteryBody.verticalCenter
+        radius: Style.space(1)
+        color: parent.outlineColor
+      }
+    }
+
     onPressed: function(b) {
       if (!root.batteryPresent) return
       if (b === Qt.RightButton) root.togglePercentage()
