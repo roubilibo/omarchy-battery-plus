@@ -3,6 +3,10 @@
 An Omarchy bar widget that replaces the standard power panel with an Apple-style
 horizontal battery indicator and a richer battery/power panel.
 
+## Screenshot
+
+<img width="412" height="414" alt="screenshot-2026-11-18_11-00-54" src="https://github.com/user-attachments/assets/dc7aa653-2f8f-40b7-9fb1-adbaeffcab4e" />
+
 ## Features
 
 - Horizontal battery outline with either the current percentage or a charge fill inside.
